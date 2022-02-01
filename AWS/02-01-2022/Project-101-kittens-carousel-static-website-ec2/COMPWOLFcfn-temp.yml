@@ -6,17 +6,17 @@ Description: |
 Resources:
   CFNInstance:
     Type: AWS::EC2::Instance
-    Properties: 
+    Properties:
       ImageId: ami-08e4e35cccc6189f4
       InstanceType: t2.micro
-      KeyName: compwolfkey
-      SecurityGroups: 
-        - cfn-sec-group
-      Tags: 
+      KeyName: comp-wolf
+      SecurityGroups:
+        - aa first
+      Tags:
         - Key: Name
           Value: kittenscarousel
-       UserData: 
-        Fn::Base64:
+      UserData:
+        Fn::Base64: 
           !Sub |
           #! /bin/bash
           sudo yum update -y
