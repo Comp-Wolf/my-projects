@@ -1,0 +1,9 @@
+<html>
+	<head>
+		<title> Oz Hakiki Pastırma & Sucuk Diyarı </title>
+	</head>
+	<body>
+		<center><h1> Oz Hakiki Pastırma & Sucuk Diyarı KAYSERİ ye Hoş Geldiniz... </h1><center>
+		<center><img src="ryu.jpg" alt="Oz Hakiki Pastırma & Sucuk Diyarı"</center>
+	</body>
+</html
