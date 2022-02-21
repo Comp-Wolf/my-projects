@@ -1,20 +1,96 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
+  This temp creates an ASG behind an ALB.
 
 Parameters:
+  comp-wolfVPC: Select your VPC
+    Description: 
+    Type: AWS::EC2::VPC::Id
+
+  comp-wolfSubnets:
+    Description: Select at least 2 subnets
+    Type: List<AWS::EC2::Subnet::Id>
+
+  comp-wolfKP:
+    Description: Select your Key
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: comp-wolf.pem
+
+  paramIT:
+    Description: Select instance type
+    Type: String
+    Default: 
+    "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"]
 
 Mappings:
+  RegionImageMap:
+    us-east-1:
+      AMI: ami-0dc2d3e4c0f9ebd18
+    us-east-2:
+      AMI: ami-0233c2d874b811deb
+    us-west-1:
+      AMI: ami-0ed05376b59b90e46
+    us-west-2:
+      AMI: ami-0dc8f589abe99f538
+    eu-west-1:
+      AMI: ami-058b1b7fe545997ae
 
 Resources:
-  myLT:
+  comp-wolfALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - !GetAtt comp-wolfSG.GroupId
+      Subnets: !Ref comp-wolfSubnets
+      Type: application
+
+  comp-wolfListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: # Required
+        - Type: forward
+          TargetGroupArn: !Ref comp-wolfTG
+      LoadBalancerArn: !Ref comp-wolfALB # Required
+      Port: 80
+      Protocol: HTTP
+
+  comp-wolfASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !GetAtt 
+      DesiredCapacity: "2"
+      HealthCheckGracePeriod: 90
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref comp-wolfLT
+        Version: "1"
+      MaxSize: "3" # Required
+      MinSize: "1" # Required
+      TargetGroupARNs:
+        - !Ref comp-wolfTG
+
+  comp-wolfCPUPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref comp-wolfASG # Required
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 60.0
+
+  comp-wolfLT:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
-        ImageId: "String"
-        InstanceType: "String"
-        KeyName: "String"
+        ImageId: !FindInMap 
+         - RegionImageMap
+         - !Ref AWS::Region
+         - AMI
+        InstanceType: !Ref paramIT
+        KeyName: !Ref comp-wolfKP
         SecurityGroupIds:
-          -
+          !GetAtt comp-wolfSG.GroupID
         SecurityGroups:
           -
         UserData: !Base64 |
@@ -41,7 +117,7 @@ Resources:
           systemctl start httpd
           systemctl enable httpd
 
-  myTG:
+  comp-wolfTG:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
@@ -50,10 +126,9 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 3
-      VpcId: "String" # add later
+      VpcId: comp-wolfVPC
 
-
-  mySG:
+  comp-wolfSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enables SSH and HTTP # Required
@@ -68,6 +143,12 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
-      VpcId: "String"
+      VpcId: comp-wolfVPC
 
 Outputs:
+  comp-wolfURL:
+    Description: URL of the ALB
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt comp-wolfALB.DNSName
