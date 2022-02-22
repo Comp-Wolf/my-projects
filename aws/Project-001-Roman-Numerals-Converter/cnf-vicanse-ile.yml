@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Description: |
+  CloudFormation Template for Roman Numerals Converter Application. This template creates Python Flask Web Application on 
+  Amazon Linux 2 (ami-033b95fb8079dc481) EC2 Instance with custom security group allowing http connections on port 80 and SSH 
+  connection on port 22. Roman Numerals Converter Application is downloaded from Github repository, then installed on Flask.
+
+Parameters:
+  keyName:
+    Description: 
+    Type: AWS::EC2::KeyPair::KeyName
+
+
+Resources:
+  WebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for Flask Web Server and SSH port to secure reach to my EC2
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  WebSerIns:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref keyName
+      DisableApiTermination: 
+      ImageId: ami-033b95fb8079dc481
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !Ref WebServerSG
+      UserData: !Base64 |
+        #!/bin/bash
+        yum update -y
+        pip3 install flask
+        mkdir roma-project && cd roman-project
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/app.py
+        mkdir templates && cd templates
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/templates/index.html
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/templates/result.html
+        cd ..
+        python3 app.py
+
+      Tags:
+        - Key: Name
+          Value: Web Server of ${AWS::StackName} Stack
+
+Outputs:
+  WebsiteURL:
+    Value: !Sub
+      - http://${PublicAddress}
+      - PublicAddress: !GetAtt WebSerIns.PublicDnsName
+    Description: Roman Numerals Converter Application URL
