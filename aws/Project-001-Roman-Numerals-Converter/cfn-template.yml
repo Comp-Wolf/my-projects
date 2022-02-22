@@ -104,6 +104,7 @@ Resources:
           #! /bin/bash
           yum update -y
           pip3 install flask
+          mkdir roma-project && cd roman-project
           wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/app.py
           mkdir templates && cd templates
           wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/templates/index.html

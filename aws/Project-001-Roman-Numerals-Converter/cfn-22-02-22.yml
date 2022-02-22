@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Roman Numerals Converter Application (Python Flask) deployed on AWS EC2 with Cloudformation and AWS CLI
+
+Parameters:
+
+  compKP:
+    Description: Select Your Key
+    Type: AWS::EC2::KeyPair::KeyName
+  
+Resources:
+
+  compIns:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-033b95fb8079dc481
+      InstanceType: t2.micro
+      KeyName: !Ref compKP
+      SecurityGroups:
+        - !Ref compSG
+      Tags:
+        - Key: Name
+          Value: !Sub Web Server of ${AWS::StackName} Stack
+      UserData: !Base64 |
+        #!/bin/bash
+        yum update -y
+        pip3 install flask
+        mkdir roma-project && cd roman-project
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/app.py
+        mkdir templates && cd templates
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/templates/index.html
+        wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-001-Roman-Numerals-Converter/templates/result.html
+        cd ..
+        python3 app.py
+
+  compSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP # Required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+
+Outputs:
+  AppURL:
+    Description: Project Application URL
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt compIns.PublicDnsName
