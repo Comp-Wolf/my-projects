@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  This temp creates an ASG behind an ALB.
+  This temp creates an ASG behind an ALB...
 
 Parameters:
   comp-wolfVPC: Select your VPC

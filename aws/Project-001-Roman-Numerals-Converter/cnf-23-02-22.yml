@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  The Roman Numerals Converter Application (Python Flask) deployed on AWS EC2 with Cloudformation and AWS CLI
+  The Roman Numerals Converter Application (Python Flask) deployed on AWS EC2 with Cloudformation and AWS CLI.
 Parameters:
 
   cwKey:
