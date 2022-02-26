@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  
+  The Phonebook Application aims to create a phonebook application in Python and deployed as a web application with Flask on AWS Application Load Balancer with Auto Scaling Group of Elastic Compute Cloud (EC2) Instances and Relational Database Service (RDS) using AWS Cloudformation Service.
+
 Parameters:
   myVPC:
     Description: Select your VPC
@@ -20,6 +21,49 @@ Mappings:
       AMI: ami-058b1b7fe545997ae
   
 Resources:
+
+  DBin
+
+  myASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        AvailabilityZones
+      DesiredCapacity: 2
+      HealthCheckGracePeriod: 90
+      HealthCheckType: ELB
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref myLT
+        Version: 1
+      MaxSize: 3 # Required
+      MinSize: 1 # Required
+      TargetGroupARNs:
+        !Ref myTG
+
+  myCPUScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: "String"
+      AutoScalingGroupName: "String" # Required
+      Cooldown: "String"
+      EstimatedInstanceWarmup: Number
+      MetricAggregationType: "String"
+      MinAdjustmentMagnitude: Number
+      PolicyType: "String"
+      PredictiveScalingConfiguration:
+        MaxCapacityBreachBehavior: "String"
+        MaxCapacityBuffer: Number
+        MetricSpecifications:
+          -
+        Mode: "String"
+        SchedulingBufferTime: Number
+      ScalingAdjustment: Number
+      StepAdjustments:
+        StepAdjustments
+      TargetTrackingConfiguration:
+        DisableScaleIn: Number
+        TargetValue: Number
+
   myLT:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -31,9 +75,7 @@ Resources:
         InstanceType: !Ref 
         KeyName: !Ref 
         SecurityGroupIds:
-          !GetAtt .GroupID
-        SecurityGroups:
-          -
+          !GetAtt EC2SecGroup.GroupID
         UserData: !Base64 |
           #!/bin/bash
           
@@ -105,3 +147,9 @@ Resources:
       VpcId: !Ref myVPC
   
 Outputs:
+  AppURL:
+    Description: Project Application URL
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt RomanNumber.PublicDnsName
