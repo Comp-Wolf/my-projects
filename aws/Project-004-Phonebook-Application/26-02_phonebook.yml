@@ -2,12 +2,106 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   
 Parameters:
-  
+  myVPC:
+    Description: Select your VPC
+    Type: AWS::EC2::VPC::Id
   
 Mappings:
-  
+  RegionImageMap:
+    us-east-1:
+      AMI: ami-0dc2d3e4c0f9ebd18
+    us-east-2:
+      AMI: ami-0233c2d874b811deb
+    us-west-1:
+      AMI: ami-0ed05376b59b90e46
+    us-west-2:
+      AMI: ami-0dc8f589abe99f538
+    eu-west-1:
+      AMI: ami-058b1b7fe545997ae
   
 Resources:
-  
+  myLT:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: !FindInMap 
+         - RegionImageMap
+         - !Ref AWS::Region
+         - AMI
+        InstanceType: !Ref 
+        KeyName: !Ref 
+        SecurityGroupIds:
+          !GetAtt .GroupID
+        SecurityGroups:
+          -
+        UserData: !Base64 |
+          #!/bin/bash
+          
+          yum update -y
+          yum install python$ -y
+          pip3 install flask
+          pip3 install flask-mysql
+          pip3 install sqlalchemy
+          pip3 install Falsk-SQLAlchemy
+          cd /home/ec2-user
+
+#          mkdir phonebook && cd phonebook
+          mkdir templates && cd templates
+
+          curl https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-004-Phonebook-Application/templates/add-update.html -o add-update.html
+          
+          curl https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-004-Phonebook-Application/templates/delete.html -o delete.html
+          
+          curl https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/Project-004-Phonebook-Application/templates/index.html -o index.html
+          
+          cd ..
+          # python3 app.py
+
+
+  myTG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref myVPC
+
+  RDSSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable just EC2SecGroup
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !Ref ALBSecGroup
+          SourceSecurityGroupId: !GetAtt AlbSecGroup.GroupId
+      VpcId: !Ref myVPC
+
+  EC2SecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable just ALBSecGroup
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref ALBSecGroup
+          SourceSecurityGroupId: !GetAtt AlbSecGroup.GroupId
+      VpcId: !Ref myVPC
+
+  ALBSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "String" # Required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref myVPC
   
 Outputs:
