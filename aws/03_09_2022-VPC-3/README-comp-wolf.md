@@ -80,9 +80,8 @@ chkconfig nginx on
 cd /usr/share/nginx/html
 chmod o+w /usr/share/nginx/html
 rm index.html
-wget https://raw.githubusercontent.com/Comp-Wolf/AWS_DevOps_Repo/main/aws/Hands-on/03_09_2022-VPC-3/index.html
-wget https://raw.githubusercontent.com/Comp-Wolf/AWS_DevOps_Repo/main/aws/Hands-on/03_09_2022-VPC-3/night-fighter-1.png
-service nginx start
+wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/03_09_2022-VPC-3/index.html
+wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/03_09_2022-VPC-3/night-fighter-1.png
 
 Security Group    : 
     Sec.Group Name : Private-Sec-Group
