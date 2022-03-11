@@ -82,6 +82,7 @@ chmod o+w /usr/share/nginx/html
 rm index.html
 wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/03_09_2022-VPC-3/index.html
 wget https://raw.githubusercontent.com/Comp-Wolf/my-projects/main/aws/03_09_2022-VPC-3/night-fighter-1.png
+service nginx start
 
 Security Group    : 
     Sec.Group Name : Private-Sec-Group
@@ -194,7 +195,8 @@ Tag             :
 ```
 Trusted entity type: AWS Service
 use case : EC2  
-Use cases for other AWS services: s3 ---> Next : Permission
+click EC2 select
+---> Next
 Permissions Policies: AmazonS3FullAccess ---> Next
 Role Name : clarusS3FullAccessforEndpoint
 Role description: clarus S3 Full Access for Endpoint
@@ -276,13 +278,13 @@ Route Table      : choose private one or both
 "clarusway-vpc-endpoint" via following command
 ```bash
 aws s3 ls
-aws s3 ls clarusway-vpc-endpoint
+aws s3 ls clarusway-vpc-endpoint-comp
 ```
 
 - copy the 'Guile.png' and 'Honda.png' files from S3 bucket into the private EC2
 ```bash
-aws s3 cp s3://clarusway-vpc-endpoint/Guile.png .
-aws s3 cp s3://clarusway-vpc-endpoint/Honda.png .
+aws s3 cp s3://clarusway-vpc-endpoint-comp/Guile.png .
+aws s3 cp s3://clarusway-vpc-endpoint-comp/Honda.png .
 ```
 
 
