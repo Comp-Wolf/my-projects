@@ -2,7 +2,28 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   Kittens Carousel is a static website application deployed on AWS Simple Storage Service (S3), served through Cloudfront and Route 53 using AWS Cloudformation Service.
 Parameters:
-  
+  paramBucketName:
+    Description: Enter your bucket name (kittens.erdoganali.net)
+    Type: String
+    Default: 
+
 Resources:
   
+  KittensS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref paramBucketName
+      OwnershipControls:
+        Rules:
+          -
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: "String"
+        RoutingRules:
+          -
+
 Outputs:
