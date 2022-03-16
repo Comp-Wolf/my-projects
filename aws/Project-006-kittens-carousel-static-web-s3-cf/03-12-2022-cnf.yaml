@@ -1,105 +1,115 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  Cloudformation Template for kittens carousel static website deploy on s3. cloudfront and route 53
+  Kittens Carousel is a static website application deployed on AWS Simple Storage Service (S3),
+  served through Cloudfront and Route 53 using AWS Cloudformation Service.
 Parameters:
-  DomainName:
-    Description: DNS Name of existing Amazon Route 53 hosted zone ex. (kittens.erdoganali.net)
-    Type: AWS::Route53::HostedZone::Id
   KittensDomainName:
-    Description: Full domain name for the App. ex. (kittens.erdoganali.net)
+    Description: Enter your bucket name (kittens.erdoganali.net)
     Type: String
-    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+​
+  DomainNameID:
+    Description: DNS Name of existing Amazon Route 53 hosted zone
+    Type: AWS::Route53::HostedZone::Id
+
+
 Resources:
-  KittensBucket:
-    Type: "AWS::S3::Bucket"
+​
+  KittensS3Bucket:
+    Type: AWS::S3::Bucket
     Properties:
-      AccessControl: PublicRead
       BucketName: !Ref KittensDomainName
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       WebsiteConfiguration:
         IndexDocument: index.html
+​
   KittensBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref KittensBucket
-      PolicyDocument: 
+      Bucket: !Ref KittensS3Bucket # Required
+      PolicyDocument:
+        Version: 2012-10-17
         Statement:
-          - Sid: PublicReadforStaticWebsite
+          - Action:
+              - 's3:GetObject'
             Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref KittensS3Bucket
+                - /*
             Principal: '*'
-            Action: s3:GetObject
-            Resource: !Join ['', ['arn:aws:s3:::', !Ref 'KittensBucket', /*]]
-            # Resource: !Sub "${KittenBucket.Arn}/*"
+  
   KittensCertificate:
-    Type: "AWS::CertificateManager::Certificate"
-    Properties:
-      CertificateTransparencyLoggingPreference: ENABLED
-      DomainName: !Ref KittensDomainName #required
-      DomainValidationOptions:
-        - DomainName: !Ref KittensDomainName
-          HostedZoneId: !Ref DomainName
-      ValidationMethod: DNS
-  KittenDNSName:
-    Type: AWS::Route53::RecordSetGroup
-    Properties:
-      HostedZoneId: !Ref DomainName
-      RecordSets: 
-        - Name: !Ref KittensDomainName
-          Type: A
-          AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2
-            DNSName: !GetAtt KittensCloudfront.DomainName
-  KittensCloudfront:
-    Type: "AWS::CloudFront::Distribution"
-    Properties:
-      DistributionConfig:
-        Comment: Cloudfront Distribution pointing to Kittens S3 bucket
-        Aliases:
-        - !Ref KittensDomainName
-        ViewerCertificate:          
-          AcmCertificateArn: !Ref KittensCertificate
-          SslSupportMethod: sni-only
-        Origins:
-        - DomainName: !Select [2, !Split ["/", !GetAtt KittensBucket.WebsiteURL]]
-          Id: KittensOrigin
-          CustomOriginConfig: 
-            OriginProtocolPolicy: http-only
-        PriceClass: PriceClass_All
-        Enabled: true
-        HttpVersion: 'http2'
-        DefaultRootObject: index.html
-        DefaultCacheBehavior:
-          TargetOriginId: KittensOrigin
-          Compress: true
-          ViewerProtocolPolicy: allow-all
-          AllowedMethods:
-          - GET
-          - HEAD
-          ForwardedValues:
-            QueryString: true
-            Cookies:
-              Forward: none 
-
-  tensCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      CertificateAuthorityArn: "String"
-      CertificateTransparencyLoggingPreference: "String"
-      DomainName: "String" # Required
+      CertificateTransparencyLoggingPreference: ENABLED
+      DomainName: !Ref KittensDomainName # Required
       DomainValidationOptions:
-        DomainValidationOptions
-      SubjectAlternativeNames:
-        SubjectAlternativeNames
+        - DomainName: !Ref KittensDomainName
+          HostedZoneId: !Ref DomainNameID
+      ValidationMethod: DNS
+​
+  KittensCloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Ref KittensDomainName
+        Comment: Cloudfront Distribution pointing to Kittens S3 bucket
+        DefaultCacheBehavior:
+          AllowedMethods:  
+          - GET
+          - HEAD
+          Compress: true
+          ForwardedValues: 
+            QueryString: true 
+            Cookies:
+              Forward: none 
+          TargetOriginId: KittensOrigin  
+          ViewerProtocolPolicy: allow-all 
+
+        Comment: "String"
+        CustomErrorResponses:
+          -
+        DefaultRootObject: !Ref 
+        Enabled: false
+        HttpVersion: "String"
+        IPV6Enabled: false
+        Origins:
+          -
+        PriceClass: "String"
+        WebACLId: "String"
       Tags:
         Tags
-      ValidationMethod: "String"
 
+  KittensDNSName:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      Comment: Creating records for kittens
+      HostedZoneId: !Ref DomainName
+      RecordSets:
+      - Name: !Ref KittensDomainName
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt KittensS3Bucket.DomainName
+          HostedZoneId: !Ref DomainName
+​
 Outputs:
-  BucketName: 
-    Description: S3 Bucket URL for Kittens Website
-    Value: !GetAtt KittensBucket.WebsiteURL
-  CloudfrontEndpoint:
-    Description: Endpoint for Kittens Cloudfront
-    Value: !GetAtt KittensCloudfront.DomainName
-  FullDomainName:
-    Description: Full Domain Name of my Application
-    Value: !Ref KittensDomainName
+  WebsiteURL:
+    Value: !GetAtt KittensS3Bucket.WebsiteURL
+    Description: URL for website hosted on S3
+  S3BucketSecureURL:
+    Value: !Join
+      - ''
+      - - 'https://'
+        - !GetAtt
+          - KittensS3Bucket
+          - DomainName
+    Description: Name of S3 bucket to hold website content
