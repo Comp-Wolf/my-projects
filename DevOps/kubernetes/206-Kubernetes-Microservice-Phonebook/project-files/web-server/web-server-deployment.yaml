@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws-deployment
+  labels:
+    name: ws-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: web-app-pod
+  template:
+    metadata:
+      name: web-app-pod
+      labels:
+        name: web-app-pod
+    spec:
+      containers:
+      - image: compwolf/resultserver:1.0
+        name: resultserver-app
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-password
+        envFrom:
+          - configMapRef:
+              name: servers-configmap

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service   
+metadata:
+  name: rs-service
+  labels:
+    app: rs-service
+spec:
+  type: NodePort  
+  ports:
+  - nodePort: 30002
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    name: result-app-pod

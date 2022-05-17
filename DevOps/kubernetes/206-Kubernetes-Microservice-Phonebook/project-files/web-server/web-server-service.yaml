@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service   
+metadata:
+  name: ws-service
+  labels:
+    app: ws-service
+spec:
+  type: NodePort  
+  ports:
+  - nodePort: 30001
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    name: web-app-pod
