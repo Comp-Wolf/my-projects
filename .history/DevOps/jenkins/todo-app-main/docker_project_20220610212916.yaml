@@ -1,0 +1,141 @@
+- name: Docker install and configuration
+  gather_facts: No
+  any_errors_fatal: true
+  hosts: _development
+  become: true
+  tasks:
+    - name: upgrade all packages
+      yum: 
+        name: '*'
+        state: latest
+    # we may need to uninstall any existing docker files from the centos repo first.
+    - name: Remove docker if installed from CentOS repo
+      yum:
+        name: "{{ item }}"
+        state: removed
+      with_items:
+        - docker
+        - docker-client
+        - docker-client-latest
+        - docker-common
+        - docker-latest
+        - docker-latest-logrotate
+        - docker-logrotate
+        - docker-engine
+    - name: Install yum utils
+      yum: 
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - yum-utils
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: latest
+    - name: Install pip
+      package:
+        name: python3-pip
+        state: present
+        update_cache: true
+    - name: Install docker sdk
+      pip:
+        name: docker
+    - name: Add user ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+- name: Postgre Database configuration
+  hosts: _ansible_postgresql
+  become: true
+  gather_facts: No
+  any_errors_fatal: true
+  vars: 
+    container_name: todoapp_postgres
+    image_name: 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:postgres
+  tasks:
+# container ve image check
+    - name: Docker authorization
+      shell: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:postgres"
+    
+    - name: Pull docker image 
+      shell: docker pull 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:postgres
+
+    - name: Launch postgresql docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports: 
+        - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: "Pp123456789"
+        volumes:
+          - /db-data:/var/lib/postgresql/data
+      register: docker_info
+- name: Nodejs Server configuration
+  hosts: _ansible_nodejs
+  become: true
+  gather_facts: No
+  any_errors_fatal: true
+  vars: 
+    container_name: todoapp_nodejs
+    image_name: 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:nodejs
+  tasks:
+    - name: remove {{ container_name }} container and {{ image_name }} if exists
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ image_name }} || echo 'Not Found'"
+
+    - name: Docker authorization
+      shell: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:postgres"
+    
+    - name: Pull docker image 
+      shell: docker pull 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:nodejs
+
+    - name: Launch nodejs docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports:
+        - "5000:5000"
+- name: React UI Server configuration
+  hosts: _ansible_react
+  become: true
+  gather_facts: No
+  any_errors_fatal: true
+  vars: 
+    container_name: todoapp_nodejs
+    image_name: 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:react
+  tasks:
+    - name: remove {{ container_name }} container and {{ image_name }} if exists
+      shell: "docker ps -q --filter 'name={{ container_name }}' && docker stop {{ container_name }} && docker rm -fv {{ container_name }} && docker image rm -f {{ image_name }} || echo 'Not Found'"
+
+    - name: Docker authorization
+      shell: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:postgres"
+    
+    - name: Pull docker image 
+      shell: docker pull 134337769473.dkr.ecr.us-east-1.amazonaws.com/engin_gultekin/todo_app:react
+
+      docker_image:
+        name: "{{ image_name }}"
+        build:
+          path: "{{ container_path }}"
+        source: build
+        state: present
+    - name: Launch react docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        ports:
+        - "3000:3000"
