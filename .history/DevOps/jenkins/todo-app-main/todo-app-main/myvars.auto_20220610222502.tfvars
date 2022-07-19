@@ -1,0 +1,7 @@
+//aws_access_key = ""
+//aws_secret_key = ""
+myami = "ami-0f095f89ae15be883"
+mykey = "comp-wolf"
+mykeypem = "Engin_Linux.pem"
+instancetype = "t2.micro"
+region = "us-east-1"
