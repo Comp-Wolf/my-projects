@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  example:
+    image: example
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 7080:5080
