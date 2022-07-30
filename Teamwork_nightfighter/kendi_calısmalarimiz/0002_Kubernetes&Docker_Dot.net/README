@@ -1,0 +1,201 @@
+# 1-) Cloudformation ile Kubernetes için EC2 ayağa kaldıralım.
+
+
+# 2-) Aşağıdaki komutlarla docker ve docker-compose'un yüklü olup olmadığını kontrol edelim.
+
+docker --version
+docker-compose --version
+
+# 3) docker-compose yuklememize gerek yok ancak ubuntu makineye docker compose yuklemek için
+
+sudo apt install docker-compose
+
+# 4-) .NET yüklemek için aşağıdaki komutları koşturalım.
+
+# buradki komutlar Microsoft paket imzalama anahtarını güvenilen anahtarlar listenize ekleyin ve paket deposunu ekleyin.
+wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+# sonra dotnet yükleyelim
+sudo apt-get update && \
+sudo apt-get install -y dotnet-sdk-6.0
+
+# 5-) Example isimli bir klasör oluşturup içerisine .NET framework'ü için belirtilen şablonu temel alan yeni bir proje oluşturalım.
+
+mkdir Example
+cd Example
+dotnet new mvc
+
+# 6-) Aşağıdaki komutu çalıştırdığımızda uygulamamıza browser üzerinden direkt olarak ulaşabiliyoruz.
+
+dotnet run
+
+# 7-) dotnet_calisma klasörünün içinde >Dockerfile< dosyası oluşturalım.
+
+---
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 5080
+
+ENV ASPNETCORE_URLS=http://+:5080
+
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
+COPY ["Example.csproj", "./"]
+RUN dotnet restore "Example.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "Example.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "Example.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Example.dll"]
+---
+
+# 8-) Aşağıdaki komutla Dockerfile dosyamızdan bir docker image oluşturalım.
+
+docker image build -t example .
+
+# 9-) İmajımızın oluştuğunu kontrol etmek için aşağıdaki komutu koşturalım.
+
+docker images
+
+# 10-) Oluşan image ile container oluşturalım.
+
+docker container run --name test-container -d -p 6080:5080 example
+
+# 11-) Tarayıcımızdan "PublicIPofEC2:6080" adresini açıp uygulamamızı görelim.
+
+# 12-) Aynı uygulamayı bu sefer docker compose ile ayağa kaldıralım. Bunun için Example klasörünün içinde >docker-compose.yml< dosyası oluşturalım.
+
+---
+version: '3.4'
+
+services:
+  example:
+    image: example
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 7080:5080
+---
+
+# 13-) Docker compose dosyasının çalışması için aşağıdaki komutu koşturalım ve 7080 portundan uygulamamızı açalım.
+
+docker-compose up 
+
+# 14-) Uygulamamıza ait IP adresine ulaşmak için aşağıdaki komutu koşturalım ve o IP adresiyle de uygulamamızı açalım.
+
+docker container inspect test-container
+
+# 15) Example klasörünün altına >namespace.yml< dosyası oluşturalım
+
+apiVersion: v1
+kind: Namespace
+metadata:
+   name: comp-wolf
+
+# 16)Aşağıdaki komutu çalıştıralım
+
+kubectl apply -f namespace.yml
+
+# 17) Example klasörünün altına >statefulset.yml< dosyası oluşturalım
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: example
+  namespace: comp-wolf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: example
+  serviceName: example
+  template:
+    metadata:
+      labels:
+        name: example
+    spec:
+      #      imagePullSecrets:
+      #        - name: regcred
+      hostNetwork: true
+      containers:        
+        - name: example
+          image: example
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 5080
+              hostPort: 5080
+          volumeMounts:
+            - name: example
+              mountPath: /var/www
+          
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - comp-wolf-master
+  volumeClaimTemplates:
+    - metadata:
+        name: example
+        namespace: comp-wolf
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 25Gi
+---
+
+# 18) Aşağıdaki komutu çalıştıralım
+kubectl apply -f statefulset.yml
+
+# 19) Example klasörünün altına >service.yml< dosyası oluşturalım
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: example
+  namespace: comp-wolf
+spec:
+  selector:
+    name: example
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5080
+ # type: LoadBalancer
+ ---
+
+ # 20) Aşağıdaki komutu çalıştıralım
+kubectl apply -f service.yml
+
+ # 21)Aşağıdaki komutu çalıştıralım
+kubectl get svc -n comp-wolf
+
+ ## ubuntu@kube-master:~/Example$ kubectl get svc -n comp-wolf
+NAME      TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+example   ClusterIP   10.105.4.67   <none>        5080/TCP    3m8s
+
+# <clusterip>:5080 adresinden sayfamızı görebiliz.

@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: example
+  namespace: deniz
+spec:
+  selector:
+    name: example
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5081
+ # type: LoadBalancer

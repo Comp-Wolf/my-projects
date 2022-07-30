@@ -1,0 +1,51 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: example
+  namespace: deniz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: example
+  serviceName: example
+  template:
+    metadata:
+      labels:
+        name: example
+    spec:
+      #      imagePullSecrets:
+      #        - name: regcred
+      hostNetwork: true
+      containers:        
+        - name: example
+          image: example
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 5081
+              hostPort: 5081
+          volumeMounts:
+            - name: example
+              mountPath: /var/www
+          
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - deniz-master
+  volumeClaimTemplates:
+    - metadata:
+        name: example
+        namespace: deniz
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 25Gi
