@@ -1,0 +1,41 @@
+terraform komutları ve işlevleri
+
+## Part -1: Terraform Commands
+
+-  Yeni yapılandırma için bir dizin ("terraform-aws") oluşturun ve dizine geçin.
+
+```bash
+mkdir terraform-aws && cd terraform-aws && touch main.tf
+```
+### Validate command.
+
+- Terminale gidin ve `terraform validate` komutunu çalıştırın. Terraform dosyalarının sözdizimsel olarak doğru ve dahili olarak tutarlı olduğunu doğrular. *.tf dosyasında hatalar varmı kontrol eder.
+
+```bash
+terraform validate
+```
+### fmt command.
+`main.tf` dosyasına gidin ve rastgele girintiler ekleyin. Ardından terminale gidin ve `terraform fmt` komutunu çalıştırın. `terraform fmt` komutu, yapılandırma dosyanızı standart stilde yeniden biçimlendirin.
+
+```bash
+terraform fmt
+```
+### terraform console
+- Terminale gidin ve 'terraform konsolu' çalıştırın. Bu komut, ifadeleri değerlendirmek ve denemek için etkileşimli bir komut satırı konsolu sağlar. Bu, enterpolasyonları konfigürasyonlarda kullanmadan önce test etmek ve halihazırda durumda kayıtlı olan değerlerle etkileşim kurmak için kullanışlıdır. Kaynakların özniteliklerini tfstate dosyasında görebilir ve yapılandırma dosyanıza yazmadan önce yerleşik işlevleri kontrol edebilirsiniz.
+
+### show command.
+
+- Terminale git ve `terraform show` komutunu çalıştırın. Terminalde tfstate dosyasını veya planını görebilirsiniz. Daha okunabilir `terraform.tfstate`.
+
+```bash
+terraform show
+```
+### graph command.
+
+- Terminale git ve `terraform graph` komutunu çalıştırın. Terraform kaynaklarının görsel bir grafiğini oluşturur. `terraform graph` komutunun çıktısı, GraphViz tarafından sağlanan nokta kullanılarak kolayca bir görüntüye dönüştürülebilen DOT formatındadır.
+
+- Çıktıyı kopyalayın ve `https://dreampuf.github.io/GraphvizOnline`a yapıştırın. Sonra göster. Bu çıktıyı yerelinizde görüntülemek istiyorsanız, graphviz (`sudo yum install graphviz`) indirebilir ve`terraform graph | dot -Tsvg > graph.svg` komutuyla bir 'graph.svg' alın.
+
+```bash
+terraform graph
+```

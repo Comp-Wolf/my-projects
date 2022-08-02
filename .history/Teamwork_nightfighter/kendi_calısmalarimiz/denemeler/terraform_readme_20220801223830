@@ -1,0 +1,13 @@
+terraform komutları ve işlevleri
+
+```bash
+mkdir terraform-aws && cd terraform-aws && touch main.tf
+```
+
+### Validate command.
+
+- Go to the terminal and run `terraform validate`. It validates the Terraform files syntactically correct and internally consistent.  
+
+```bash
+terraform validate
+```

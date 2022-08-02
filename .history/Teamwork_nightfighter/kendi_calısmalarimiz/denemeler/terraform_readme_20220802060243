@@ -1,0 +1,32 @@
+terraform komutları ve işlevleri
+
+```bash
+mkdir terraform-aws && cd terraform-aws && touch main.tf
+```
+
+### Validate command.
+
+- Go to the terminal and run `terraform validate`. It validates the Terraform files syntactically correct and internally consistent.  
+
+```bash
+terraform validate
+```
+### show command.
+
+- Terminale git ve `terraform show` komutunu koştur.
+
+ Terminalde tfstate dosyasını veya planını görebilirsiniz. Daha okunabilir `terraform.tfstate`.
+
+```bash
+terraform show
+```
+
+### graph command.
+
+- Go to the terminal and run `terraform graph`. It creates a visual graph of Terraform resources. The output of "terraform graph" command is in the DOT format, which can easily be converted to an image by making use of dot provided by GraphViz.
+
+- Copy the output and paste it to the `https://dreampuf.github.io/GraphvizOnline`. Then display it. If you want to display this output in your local, you can download graphviz (`sudo yum install graphviz`) and take a `graph.svg` with the command `terraform graph | dot -Tsvg > graph.svg`.
+
+```bash
+terraform graph
+```

@@ -1,0 +1,117 @@
+terraform komutları ve işlevleri
+
+## Part -1: Terraform Commands
+
+-  Yeni yapılandırma için bir dizin ("terraform-aws") oluşturun ve dizine geçin.
+
+```bash
+mkdir terraform-aws && cd terraform-aws && touch main.tf
+```
+### Validate command.
+
+- Terminale gidin ve `terraform validate` komutunu çalıştırın. Terraform dosyalarının sözdizimsel olarak doğru ve dahili olarak tutarlı olduğunu doğrular. *.tf dosyasında hatalar varmı kontrol eder.
+
+```bash
+terraform validate
+```
+### fmt command.
+`main.tf` dosyasına gidin ve rastgele girintiler ekleyin. Ardından terminale gidin ve `terraform fmt` komutunu çalıştırın. `terraform fmt` komutu, yapılandırma dosyanızı standart stilde yeniden biçimlendirin.
+
+```bash
+terraform fmt
+```
+### terraform console
+- Terminale gidin ve `terraform console` çalıştırın. Bu komut, ifadeleri değerlendirmek ve denemek için etkileşimli bir komut satırı konsolu sağlar. Bu, enterpolasyonları konfigürasyonlarda kullanmadan önce test etmek ve halihazırda durumda kayıtlı olan değerlerle etkileşim kurmak için kullanışlıdır. Kaynakların özniteliklerini tfstate dosyasında görebilir ve yapılandırma dosyanıza yazmadan önce yerleşik işlevleri kontrol edebilirsiniz.
+
+- terraform-aws dizini altında bir dosya oluşturalım ve adını `cloud` verelim ve içinde `hello devops engineers` yazsın.
+
+```bash
+echo "hello devops" > cloud
+```
+- Aşağıdaki komutları çalıştırın.
+
+```bash
+terraform console
+> aws_instance.tf-ec2
+> aws_instance.tf-ec2.private_ip
+> min (1,2,3)
+> lower("HELLO")
+> file("${path.module}/cloud")
+> aws_s3_bucket.tf-s3
+> aws_s3_bucket.tf-s3.bucket
+> exit or (ctrl+c)
+```
+### show command.
+
+- Terminale git ve `terraform show` komutunu çalıştırın. Terminalde tfstate dosyasını veya planını görebilirsiniz. Daha okunabilir `terraform.tfstate`.
+
+```bash
+terraform show
+```
+### graph command.
+
+- Terminale git ve `terraform graph` komutunu çalıştırın. Terraform kaynaklarının görsel bir grafiğini oluşturur. `terraform graph` komutunun çıktısı, GraphViz tarafından sağlanan nokta kullanılarak kolayca bir görüntüye dönüştürülebilen DOT formatındadır.
+
+- Çıktıyı kopyalayın ve `https://dreampuf.github.io/GraphvizOnline`a yapıştırın. Sonra göster. Bu çıktıyı yerelinizde görüntülemek istiyorsanız, graphviz (`sudo yum install graphviz`) indirebilir ve`terraform graph | dot -Tsvg > graph.svg` komutuyla bir 'graph.svg' alın.
+
+```bash
+terraform graph
+```
+### output command.
+
+- Çıktı değerleri, altyapınız hakkındaki bilgileri komut satırında kullanılabilir hale getirir ve diğer Terraform yapılandırmalarının kullanması için bilgileri açığa çıkarabilir.
+
+- Şimdi aşağıdakileri `main.tf` dosyasına ekleyin. Ardından `terraform apply` veya `terraform refresh` ve `terraform output` komutlarını çalıştırın. 
+- `terraform output` komutu, bir durum dosyasından çıktı okumak için kullanılır. Bir Terraform durum dosyasından bir çıktı değişkeni okur ve değeri yazdırır. Ek argüman olmadan çıktı, (ana) kök modül için tüm çıktıları görüntüler. NAME belirtilmezse tüm çıktılar yazdırılır.
+
+- main.tf dosyasının içine bu kodları ekliyoruz.
+
+```bash
+output "tf_example_public_ip" {
+  value = aws_instance.tf-ec2.public_ip
+}
+
+output "tf_example_s3_meta" {
+  value = aws_s3_bucket.tf-s3.region
+}
+```
+- kodları ekledikten sonra. sırası ile konutları çalıştırıp sonuçlarına bakalım.
+
+```bash
+terraform apply
+terraform output
+terraform output -json
+terraform output tf_example_public_ip
+```
+### terraform apply -refresh-only command.
+- `terraform apply -refresh-only` komutu, durum dosyasını gerçek dünya altyapısıyla güncellemek için kullanılır. Bu, bilinen son durumdan herhangi bir sapmayı tespit etmek ve durum dosyasını güncellemek için kullanılabilir. Öncelikle `terraform state list` ile kaynaklarınızın mevcut durumunu kontrol edin. Ardından AWS konsoluna gidin ve `wolf-tf-test-bucket-addwhateveryouwant` S3 kovanızı silin. Durum listesini tekrar görüntüleyin ve durumu yenileyin. Aşağıdaki komutları çalıştırın.
+
+```bash
+terraform state list
+```
+- kodun alacağı çıktı
+    aws_instance.tf-example-ec2
+    aws_s3_bucket.tf-example-s3
+
+```bash
+terraform apply -refresh-only
+```
+
+```bash
+terraform state list
+```
+- kodun alacağı çıktı
+    aws_instance.tf-example-ec2
+
+- Artık `terraform.tfstate` ve `terraform.tfstate.backup` dosyaları arasındaki farkları görebilirsiniz. Tfstate dosyasından S3 kovası silinir ancak yedekleme dosyasında S3 kovasını görebilirsiniz.
+
+- `terraform apply -auto-approve` komutunu çalıştırın ve tekrar S3 kovası oluşturun.
+
+```bash
+terraform apply -auto-approve
+```
+- `terraform plan` komutuda kontrol etmek için kodu tekrar çalıştırdığı için `terraform apply -refresh-only` aynı işlemi yapıyor.
+
+> ### Notes: 
+
+- 'terraform application -refresh=false' komutunu çalıştırın.

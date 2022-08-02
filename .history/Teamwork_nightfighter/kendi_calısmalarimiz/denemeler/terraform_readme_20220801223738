@@ -1,0 +1,4 @@
+terraform komutları ve işlevleri
+
+$ mkdir terraform-aws && cd terraform-aws && touch main.tf
+
