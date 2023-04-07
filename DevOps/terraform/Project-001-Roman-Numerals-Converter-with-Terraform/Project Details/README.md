@@ -128,7 +128,7 @@ Ten         Warning with "Not Valid! Please enter a number between 1 and 3999, i
 
 ## Steps to Solution
   
-- Step 1: Download or clone project definition from `clarusway-aws-workshop` repo on Github 
+- Step 1: Download or clone project definition from `clww-aws-workshop` repo on Github 
 
 - Step 2: Create project folder for local public repo on your pc
 

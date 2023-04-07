@@ -7,8 +7,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: P123456p
       MYSQL_DATABASE: bookstore_db
-      MYSQL_USER: clarusway
-      MYSQL_PASSWORD: Clarusway_1
+      MYSQL_USER: clww
+      MYSQL_PASSWORD: clww_1
     networks:
       - clarusnet
 

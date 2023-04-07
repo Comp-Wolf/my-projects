@@ -79,15 +79,15 @@ Name(manually)       : Instance-Snapshot_First
 - Click snapshot `Action` menu and select `create image`
 
 ```text
-Name        : ClaruswayAMI_1
-Description : ClaruswayAMI_1
+Name        : clwwAMI_1
+Description : clwwAMI_1
 ```
 
 - Click the `launch instance` tab.
 
 - Click `myAMI` from left-hand menu.
 
-- Select `ClaruswayAMI_1' AS AMI
+- Select `clwwAMI_1' AS AMI
 
 - Launch instance named "Instance_1_from_Sample_Instance"
 
@@ -104,21 +104,21 @@ Description : ClaruswayAMI_1
 - Select image >> create image.
 
 ```text
-Name        : ClaruswayAMI_2
-Description : ClaruswayAMI_2
+Name        : clwwAMI_2
+Description : clwwAMI_2
 ```
 
-- Click AMI section from left hand menu and show `ClaruswayAMI_2`
+- Click AMI section from left hand menu and show `clwwAMI_2`
 
-- After ClaruswayAMI creation process is completed, click snapshot section from left-hand menu.
+- After clwwAMI creation process is completed, click snapshot section from left-hand menu.
 
--  Show that AWS has created a new snapshot for newly created `ClaruswayAMI_2` image.
+-  Show that AWS has created a new snapshot for newly created `clwwAMI_2` image.
 
 -  Click the `launch instance` tab.
 
 - Click `myAMI` from left-hand menu.
 
-- Select `ClaruswayAMI_2`.
+- Select `clwwAMI_2`.
 
 
 - Launch instance as named "Instance_2_from_Sample_Instance_"
@@ -146,14 +146,14 @@ Name(manually)       : Snapshot_Third
 - Go to the AMI menu and Click create AMI.
 
 ```text
-Name        : ClaruswayAMI_3
-Description : ClaruswayAMI_3
+Name        : clwwAMI_3
+Description : clwwAMI_3
 ```
 - Click the `launch instance` tab.
 
 - Click `myAMI` from left-hand menu.
 
-- Select `ClaruswayAMI_3`.
+- Select `clwwAMI_3`.
 
 - Launch instance as named "Instance_3_from_Sample_Instance_"
 
@@ -165,7 +165,7 @@ Description : ClaruswayAMI_3
 
 - First go to the AMI section  from left-hand menu and say students to not to do together.
 
-- Select the ClaruswayAMI_4
+- Select the clwwAMI_4
 
 - Click on permission and Click on  "Make public "
 
